@@ -8,6 +8,8 @@ from scipy.stats import gamma
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 
+import sys
+
 import pdb
 
 def cov_exp(r, rho, sigma=1.0):
@@ -81,8 +83,13 @@ def set_fem_fun(vec, fs):
     retval.vector().set_local(vec)
     return retval
 
+N = int(sys.argv[1])
+mean = float(sys.argv[2])
+var = float(sys.argv[3])
+sample = sys.argv[4]
+
 # square mesh
-mesh = UnitSquareMesh(25,25)
+mesh = UnitSquareMesh(N,N)
 
 # function space
 V = FunctionSpace(mesh, 'CG', 1)
@@ -99,8 +106,6 @@ print(e)
 print(error)
 
 print("Generating non-Gaussian random filed...")
-mean = 4000
-var = 250
 
 loc = 0
 scale = var / mean
@@ -117,8 +122,8 @@ plt.figure()
 im = plot(rF)
 plt.colorbar(im)
 plt.title("Non-Gaussian Field")
-plt.savefig('figures/NonGaussianField.png')
+plt.savefig('figures/NonGaussianField_' + sample + '.png')
 
 print("Saving non-Gaussian random filed into pvd...")
-vtkfile = File('output/randomField/gamma.pvd')
+vtkfile = File('output/randomField/gamma_' + sample + '.pvd')
 vtkfile << rF
