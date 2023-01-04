@@ -108,7 +108,6 @@ a = mean / scale
 
 randomField = nonGauss(w, v, e, a, loc, scale)
 
-pdb.set_trace()
 
 rF = set_fem_fun(randomField, FunctionSpace(mesh, 'CG', 1))
 
