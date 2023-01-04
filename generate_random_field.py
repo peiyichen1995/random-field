@@ -1,3 +1,8 @@
+# sample usage
+# python generate_random_field.py 25 4000 250 0
+# script name, N, mean, variance, sample id
+
+
 
 from dolfin import *
 import meshio
@@ -117,13 +122,13 @@ randomField = nonGauss(w, v, e, a, loc, scale)
 rF = set_fem_fun(randomField, FunctionSpace(mesh, 'CG', 1))
 
 
-print("Saving non-Gaussian random filed...")
+print("Saving non-Gaussian random filed sample: " + sample + "...")
 plt.figure()
 im = plot(rF)
 plt.colorbar(im)
 plt.title("Non-Gaussian Field")
 plt.savefig('figures/NonGaussianField_' + sample + '.png')
 
-print("Saving non-Gaussian random filed into pvd...")
+print("Saving non-Gaussian random filed sample: " + sample + " into pvd...")
 vtkfile = File('output/randomField/gamma_' + sample + '.pvd')
 vtkfile << rF
