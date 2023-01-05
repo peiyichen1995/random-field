@@ -14,6 +14,7 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 import sys
+import csv
 
 import pdb
 
@@ -65,7 +66,7 @@ def trun_order(err, C, M, w):
     e = 0
     eig = 0
     trCM = np.trace(np.dot(C, M))
-    while 1 - eig / trCM > 0.1:
+    while 1 - eig / trCM > err:
         eig = eig + w[e]
         e = e + 1
     error = (1 - eig / trCM)
@@ -81,7 +82,7 @@ def nonGauss(w, v, e, a, loc, scale):
     for i in range(len(w)):
         randomField[i] = norm.cdf(randomField[i], loc=0.0,scale=1.0)
         randomField[i] = gamma.ppf(randomField[i], a, loc=loc, scale=scale)
-    return randomField
+    return randomField, gauss[:e]
 
 def set_fem_fun(vec, fs):
     retval = Function(fs, name='gamma')
@@ -101,12 +102,12 @@ V = FunctionSpace(mesh, 'CG', 1)
 
 print("Generating Gaussian random filed...")
 w, v, C, M = solve_covariance_EVP(
-    lambda r: cov_exp(r, rho=0.25, sigma=1.0), mesh, V)
+    lambda r: cov_exp(r, rho=0.36, sigma=1.0), mesh, V)
 
 w, v = order_eig(w, v)
 
 print("Truncation error")
-e, error = trun_order(0.1, C, M, w)
+e, error = trun_order(0.01, C, M, w)
 print(e)
 print(error)
 
@@ -116,8 +117,9 @@ loc = 0
 scale = var / mean
 a = mean / scale
 
-randomField = nonGauss(w, v, e, a, loc, scale)
+randomField, etas = nonGauss(w, v, e, a, loc, scale)
 
+# pdb.set_trace()
 
 rF = set_fem_fun(randomField, FunctionSpace(mesh, 'CG', 1))
 
@@ -128,6 +130,12 @@ im = plot(rF)
 plt.colorbar(im)
 plt.title("Non-Gaussian Field")
 plt.savefig('figures/NonGaussianField_' + sample + '.png')
+
+print("Saving non-Gaussian random filed etas sample: " + sample + " into csv...")
+f = open('output/etas/etas_' + sample + '.csv', 'w')
+writer = csv.writer(f)
+writer.writerow(etas)
+f.close()
 
 print("Saving non-Gaussian random filed sample: " + sample + " into pvd...")
 vtkfile = File('output/randomField/gamma_' + sample + '.pvd')
