@@ -12,6 +12,7 @@ import scipy.linalg as dla
 from scipy.stats import gamma
 from scipy.stats import norm
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 import sys
 import csv
@@ -53,7 +54,7 @@ def solve_covariance_EVP(cov, mesh, V):
     # w, v = spla.eigsh(A, k, M)
     w, v = dla.eigh(A, b=M)
 
-    return w, v, C, M
+    return w, v, C, M, coords
 
 # order eigenvalues and eigen Vectors
 def order_eig(w, v):
@@ -101,7 +102,7 @@ mesh = UnitSquareMesh(N,N)
 V = FunctionSpace(mesh, 'CG', 1)
 
 print("Generating Gaussian random filed...")
-w, v, C, M = solve_covariance_EVP(
+w, v, C, M, coords = solve_covariance_EVP(
     lambda r: cov_exp(r, rho=0.36, sigma=1.0), mesh, V)
 
 w, v = order_eig(w, v)
@@ -129,7 +130,16 @@ plt.figure()
 im = plot(rF)
 plt.colorbar(im)
 plt.title("Non-Gaussian Field")
-plt.savefig('figures/NonGaussianField_' + sample + '.png')
+plt.savefig('figures/2D/NonGaussianField_' + sample + '.png')
+
+print("Saving non-Gaussian random filed sample: " + sample + " (3D surface)...")
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_trisurf(coords[:, 0], coords[:, 1], randomField, cmap=cm.jet, linewidth=0)
+plt.title("Non-Gaussian Field (3D surface)")
+plt.savefig('figures/3D/NonGaussianField3DSurf_' + sample + '.png')
+
+# pdb.set_trace()
 
 print("Saving non-Gaussian random filed etas sample: " + sample + " into csv...")
 f = open('output/etas/etas_' + sample + '.csv', 'w')
