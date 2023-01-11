@@ -118,7 +118,7 @@ loc = 0
 scale = var / mean
 a = mean / scale
 
-randomField, etas = nonGauss(w, v, e, a, loc, scale)
+randomField, etas = nonGauss(w, v, 30, a, loc, scale)
 
 # pdb.set_trace()
 
