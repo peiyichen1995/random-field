@@ -1,5 +1,6 @@
 # sample usage
 # python non_gaussian_fields.py 64 40000 64000000 0 1000
+# python non_gaussian_fields.py 64 40000 4000000 0 1700
 # script name, N, mean, variance, start of number of samples, end of number of samples
 
 
@@ -18,6 +19,8 @@ import sys
 import csv
 
 import pdb
+
+np.random.seed(0)
 
 def cov_exp(r, rho, sigma=1.0):
     return sigma * np.exp(-math.pi * r * r / 2.0 / rho / rho)

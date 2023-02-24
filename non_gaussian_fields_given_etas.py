@@ -1,5 +1,5 @@
 # sample usage
-# python non_gaussian_fields.py 64 40000 64000000 etas_10.csv
+# python non_gaussian_fields_given_etas.py 64 40000 4000000 etas_5.csv
 # script name, N, mean, variance, file name of etas
 
 
@@ -110,18 +110,18 @@ w, v, C, M, coords = solve_covariance_EVP(
 
 w, v = order_eig(w, v)
 
-for i in range(10):
-    mode = set_fem_fun(v[:,i], V)
-    plt.figure()
-    im = plot(mode)
-    plt.title("mode_" + str(i))
-    plt.savefig('figures/modes/mode_' + str(i) + '.png')
-    plt.show()
+# for i in range(10):
+#     mode = set_fem_fun(v[:,i], V)
+#     plt.figure()
+#     im = plot(mode)
+#     plt.title("mode_" + str(i))
+#     plt.savefig('figures/modes/mode_' + str(i) + '.png')
+#     plt.show()
 
 
 
-import pdb
-pdb.set_trace()
+# import pdb
+# pdb.set_trace()
 
 loc = 0
 scale = var / mean
