@@ -1,7 +1,6 @@
 # sample usage
-# python non_gaussian_fields.py 64 40000 64000000 0 500
-# python non_gaussian_fields.py 64 40000 4000000 0 1700
-# script name, N, mean, variance, start of number of samples, end of number of samples
+# python non_gaussian_fields_scene_1.py 64 43443.02986195871 83041798.37300198 0.45333000000000007 0
+# script name, N, mean, variance, rho, sample_id
 
 
 
@@ -21,24 +20,13 @@ import csv
 
 import pdb
 
-np.random.seed(0)
+np.random.seed(10)
 
 def cov_exp(r, rho, sigma=1.0):
     return sigma * np.exp(-math.pi * r * r / 2.0 / rho / rho)
 
 def cov_len(rho, sigma=1.0):
     return integrate.quad(lambda r: cov_exp(r, rho), 0, math.inf)
-
-# target = 0.3
-# arr = np.arange(1e-5, 1, 1e-5)
-# diff = 1000
-# cv_l = 0
-# for i in arr:
-#     if (abs(cov_len(i)[0] - target) < diff):
-#         diff = abs(cov_len(i)[0] - target)
-#         cv_l = i
-#
-# pdb.set_trace()
 
 def solve_covariance_EVP(cov, mesh, V):
     u = TrialFunction(V)
@@ -111,8 +99,8 @@ def set_fem_fun(vec, fs):
 N = int(sys.argv[1])
 mean = float(sys.argv[2])
 var = float(sys.argv[3])
-start_sample = int(sys.argv[4])
-end_sample = int(sys.argv[5])
+rho = float(sys.argv[5])
+sample_id = int(sys.argv[6])
 
 # square mesh
 mesh = UnitSquareMesh(N,N)
@@ -122,7 +110,7 @@ V = FunctionSpace(mesh, 'CG', 1)
 
 print("Generating Gaussian random filed...")
 w, v, C, M, coords = solve_covariance_EVP(
-    lambda r: cov_exp(r, rho=0.42426, sigma=1.0), mesh, V)
+    lambda r: cov_exp(r, rho=rho, sigma=1.0), mesh, V)
 
 w, v = order_eig(w, v)
 
@@ -131,38 +119,33 @@ scale = var / mean
 a = mean / scale
 
 
-for i in range(start_sample, end_sample):
-    sample = str(i)
-    print("Generating non-Gaussian random filed {:}...".format(i))
-    randomField, etas = nonGauss(w, v, 30, a, loc, scale)
+sample = str(sample_id)
+print("Generating non-Gaussian random filed {:}...".format(sample_id))
+randomField, etas = nonGauss(w, v, 30, a, loc, scale)
 
-    # pdb.set_trace()
+rF = set_fem_fun(randomField, FunctionSpace(mesh, 'CG', 1))
 
-    rF = set_fem_fun(randomField, FunctionSpace(mesh, 'CG', 1))
+print("Saving non-Gaussian random filed sample: " + sample + "...")
+plt.figure()
+im = plot(rF)
+plt.colorbar(im)
+plt.title("Non-Gaussian Field")
+plt.savefig('fig_scene1/2D/NonGaussianField_' + sample + '.png')
+
+print("Saving non-Gaussian random filed sample: " + sample + " (3D surface)...")
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_trisurf(coords[:, 0], coords[:, 1], randomField, cmap=cm.jet, linewidth=0)
+plt.title("Non-Gaussian Field (3D surface)")
+plt.savefig('fig_scene1/3D/NonGaussianField3DSurf_' + sample + '.png')
 
 
-    print("Saving non-Gaussian random filed sample: " + sample + "...")
-    plt.figure()
-    im = plot(rF)
-    plt.colorbar(im)
-    plt.title("Non-Gaussian Field")
-    plt.savefig('fig_scene2/2D/NonGaussianField_' + sample + '.png')
+print("Saving non-Gaussian random filed etas sample: " + sample + " into csv...")
+f = open('output_scene1/etas/etas_' + sample + '.csv', 'w')
+writer = csv.writer(f)
+writer.writerow(etas)
+f.close()
 
-    print("Saving non-Gaussian random filed sample: " + sample + " (3D surface)...")
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    surf = ax.plot_trisurf(coords[:, 0], coords[:, 1], randomField, cmap=cm.jet, linewidth=0)
-    plt.title("Non-Gaussian Field (3D surface)")
-    plt.savefig('fig_scene2/3D/NonGaussianField3DSurf_' + sample + '.png')
-
-    # pdb.set_trace()
-
-    print("Saving non-Gaussian random filed etas sample: " + sample + " into csv...")
-    f = open('output_scene2/etas/etas_' + sample + '.csv', 'w')
-    writer = csv.writer(f)
-    writer.writerow(etas)
-    f.close()
-
-    print("Saving non-Gaussian random filed sample: " + sample + " into pvd...")
-    vtkfile = File('output_scene2/randomField/gamma_' + sample + '.pvd')
-    vtkfile << rF
+print("Saving non-Gaussian random filed sample: " + sample + " into pvd...")
+vtkfile = File('output_scene1/randomField/gamma_' + sample + '.pvd')
+vtkfile << rF

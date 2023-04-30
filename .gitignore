@@ -3,3 +3,7 @@ output/
 *.txt
 figures_1600/
 output_1600/
+fig_scene1/
+fig_scene2/
+output_scene1/
+output_scene2/
